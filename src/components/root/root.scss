@@ -1,0 +1,29 @@
+.root-component {
+  font-family: sans-serif;
+  text-align: center;
+
+  .counter {
+    display: inline-block;
+
+    .counter-text {
+      padding: 0 30px;
+      text-align: center;
+    }
+  }
+
+
+  .inc-dec-button {
+    width: 60px;
+    height: 60px;
+    outline: none;
+    border-width: 0;
+    background-color: #9542f4;
+    border-radius: 8px;
+    display: inline-block;
+    color: white;
+
+    .inc-dec-text {
+      line-height: 60px;
+    }
+  }
+}
