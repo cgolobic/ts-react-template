@@ -1,17 +1,19 @@
 import * as React from 'react';
 import './root.scss';
-import { InjectComponent} from '../../di/component-injector';
+import { InjectProps } from '../../di/component-injector';
+import { LoggerService } from '../../services/logger-service';
 
 export interface RootProps {
   title: string;
   subtitle: string;
+  LoggerService: LoggerService;
 };
 
 export interface RootState {
   count: number
 };
 
-@InjectComponent()
+@InjectProps([{inject: LoggerService}])
 export class Root extends React.Component<RootProps, RootState> {
   constructor(props: RootProps) {
     super(props);
@@ -47,11 +49,13 @@ export class Root extends React.Component<RootProps, RootState> {
     this.setState({
       count: this.state.count + 1
     });
+    this.props.LoggerService.logMessage(`The count is ${this.state.count}`);
   }
 
   decrementCounter() {
     this.setState({
       count: this.state.count - 1
     });
+    this.props.LoggerService.logMessage(`The count is ${this.state.count}`);
   }
 }

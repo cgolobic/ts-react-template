@@ -8,7 +8,7 @@ describe('Component: Root', () => {
   let wrapper: any;
 
   beforeEach(() => {
-    this.wrapper = mount(<Root title="" subtitle="" />);
+    this.wrapper = mount(<Root title="" subtitle="" {...({} as any)} />);
   });
   
   it('should increment count', () => {

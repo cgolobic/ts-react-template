@@ -2,30 +2,24 @@ import * as React from 'react';
 import { fetchDependency } from './container';
 import 'reflect-metadata';
 
-export function ComponentInjector<P, S>(InputTemplate: React.ComponentClass<P>, dependencies: any[]): React.ComponentClass<P> {
-  return class extends React.Component<P, S> {
-    render() {
-      let _deps: any = { deps: {} };
-      dependencies.forEach((dep: any) => {
-        if(dep.hasOwnProperty('propName')) {
-          _deps.deps[dep.propName] = fetchDependency(dep.inject.name);
-        } else {
-          _deps.deps[dep.inject.name] = fetchDependency(dep.inject.name);
-        }
-      });
-      return(
-        <InputTemplate {...this.state} {...this.props} {..._deps}/>
-      )
-    }
-  }
-}
-
-export function InjectComponent() {
+export function InjectProps(dependencies: any[]) {
   return function (target: React.ComponentClass): any {
-    return class test extends React.Component<any, any> {
+    return class extends React.Component<any, any> {
       _internalComponent: React.ComponentClass = target;
+      _injectionComplete: boolean = false;
+      _injectedProps: any = {};
       render() {
-        return(<this._internalComponent {...this.props} {...this.state} />);
+        if (!this._injectionComplete) {
+          dependencies.forEach((dependency: any) => {
+            let propKey = dependency.inject.name;
+            if (dependency.hasOwnProperty('propName')) {
+              propKey = dependency.propName;
+            }
+            this._injectedProps[propKey] = fetchDependency(propKey);
+          });
+          this._injectionComplete = true;
+        }
+        return(<this._internalComponent {...this.props} {...this.state} {...this._injectedProps} />);
       }
     }
   }
