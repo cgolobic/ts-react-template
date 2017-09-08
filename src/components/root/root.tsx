@@ -1,5 +1,6 @@
 import * as React from 'react';
 import './root.scss';
+import { InjectComponent} from '../../di/component-injector';
 
 export interface RootProps {
   title: string;
@@ -10,9 +11,10 @@ export interface RootState {
   count: number
 };
 
+@InjectComponent()
 export class Root extends React.Component<RootProps, RootState> {
-  constructor() {
-    super();
+  constructor(props: RootProps) {
+    super(props);
     this.state = {
       count: 0
     };
