@@ -1,9 +1,9 @@
 var _registeredDependencies = {} as any;
 
-export function registerService<T>(service: new (...params: any[]) => T, overrideService: T = undefined): void {
+export function registerService<T>(service: new (...params: any[]) => T, overrideService?: new (...params: any[]) => T): void {
   if (!isDependencyRegistered(service)) {
     if (overrideService !== undefined && overrideService !== null) {
-      _registeredDependencies[(service as any).name] = overrideService;
+      _registeredDependencies[(service as any).name] = new overrideService();
     } else {
       _registeredDependencies[(service as any).name] = new service();
     }

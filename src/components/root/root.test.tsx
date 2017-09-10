@@ -1,20 +1,24 @@
 import { expect } from 'chai';
 import * as React from 'react';
 import * as Sinon from 'sinon';
-import { mount } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 import { Root } from './root';
+import { registerService } from '../../di/container';
+import { MockLoggerService } from '../../mocks/logger-service.mock';
+import { LoggerService } from '../../services/logger-service';
 
 describe('Component: Root', () => {
   let wrapper: any;
 
   beforeEach(() => {
-    this.wrapper = mount(<Root title="" subtitle="" {...({} as any)} />);
+    registerService(LoggerService, MockLoggerService);
+    this.wrapper = shallow(<Root title="" subtitle="" {...({} as any)} />).dive();
   });
   
   it('should increment count', () => {
     this.wrapper.setState({
       count: 0
-    });    
+    });
     this.wrapper.instance().incrementCounter();
     expect(this.wrapper.state('count')).to.equal(1);
   });
