@@ -20,10 +20,25 @@
     background-color: #9542f4;
     border-radius: 8px;
     display: inline-block;
-    color: white;
 
     .inc-dec-text {
       line-height: 60px;
+      color: white;
+    }
+  }
+
+  .message-button {
+    height: 60px;
+    width: 40%;
+    outline: none;
+    border-width: 0;
+    background-color: #9542f4;
+    border-radius: 8px;
+    display: block;
+    margin: 30px auto 0 auto;
+
+    .message-button-text {
+      color: white;
     }
   }
 }

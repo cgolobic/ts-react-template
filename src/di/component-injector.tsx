@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { fetchDependency } from './container';
 import 'reflect-metadata';
+import { PropInjectorDependency } from './types/prop-injector-dependency';
 
-export function InjectProps(dependencies: any[]) {
+export function InjectProps(dependencies: PropInjectorDependency[]) {
   return function (target: React.ComponentClass): any {
     return class extends React.Component<any, any> {
       _internalComponent: React.ComponentClass = target;
@@ -15,7 +16,7 @@ export function InjectProps(dependencies: any[]) {
             if (dependency.hasOwnProperty('propName')) {
               propKey = dependency.propName;
             }
-            this._injectedProps[propKey] = fetchDependency(propKey);
+            this._injectedProps[propKey] = fetchDependency(dependency.inject.name);
           });
           this._injectionComplete = true;
         }

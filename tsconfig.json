@@ -7,7 +7,8 @@
     "target": "es6",
     "jsx": "react",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "noStrictGenericChecks": false
   },
   "include": [
     "./src/**/*"
