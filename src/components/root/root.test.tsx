@@ -14,8 +14,8 @@ describe('Component: Root', () => {
   let wrapper: ShallowWrapper<any, any>;
 
   beforeEach(() => {
-    registerService(LoggerService, MockLoggerService);
-    registerService(ApiClient, MockApiClient);
+    registerService({ service: LoggerService, overrideService: MockLoggerService });
+    registerService({ service: ApiClient, overrideService: MockApiClient });
     this.wrapper = TestingUtils.shallowRenderHoC(Root, []);
   });
   

@@ -1,21 +1,23 @@
+import { ServiceRegistration } from './types/service-registration';
+import { FunctionRegistration } from './types/function-registration';
 var _registeredDependencies = {} as any;
 
-export function registerService(service: new (...params: any[]) => any, overrideService?: new (...params: any[]) => any): void {
-  if (!isDependencyRegistered(service)) {
-    if (overrideService !== undefined && overrideService !== null) {
-      _registeredDependencies[(service as any).name] = new overrideService();
+export function registerService(serviceRegistration: ServiceRegistration): void {
+  if (!isDependencyRegistered(serviceRegistration.service)) {
+    if (serviceRegistration.overrideService !== undefined && serviceRegistration.overrideService !== null) {      
+      _registeredDependencies[(serviceRegistration.service as any).name] = new serviceRegistration.overrideService();
     } else {
-      _registeredDependencies[(service as any).name] = new service();
+      _registeredDependencies[(serviceRegistration.service as any).name] = new serviceRegistration.service();
     }
   }
 }
 
-export function registerFunction(func: Function, overrideFunc: Function = undefined): void {
-  if (!isDependencyRegistered(func)) {
-    if (overrideFunc !== undefined && overrideFunc !== null) {
-      _registeredDependencies[func.name] = overrideFunc;
+export function registerFunction(functionRegistration: FunctionRegistration): void {
+  if (!isDependencyRegistered(functionRegistration.function)) {
+    if (functionRegistration.overrideFunction !== undefined && functionRegistration.overrideFunction !== null) {
+      _registeredDependencies[functionRegistration.function.name] = functionRegistration.overrideFunction;
     } else {
-      _registeredDependencies[func.name] = func;
+      _registeredDependencies[functionRegistration.function.name] = functionRegistration.function;
     }
   }
 }

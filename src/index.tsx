@@ -6,8 +6,8 @@ import { registerService } from './di/container';
 import { LoggerService } from './services/logger-service';
 import { ApiClient } from './services/api-client-service';
 
-registerService(LoggerService);
-registerService(ApiClient);
+registerService({ service: LoggerService });
+registerService({ service: ApiClient });
 
 ReactDom.render(
   <Root title="Root component title" subtitle="Root component subtitle" {...({} as any)} />,

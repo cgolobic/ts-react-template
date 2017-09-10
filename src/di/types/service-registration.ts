@@ -1,3 +1,4 @@
-export interface ServiceRegistration<T> {
-  service: new (...params: any[]) => T
+export interface ServiceRegistration {
+  service: new (...params: any[]) => any;
+  overrideService?: new (...params: any[]) => any;
 }
