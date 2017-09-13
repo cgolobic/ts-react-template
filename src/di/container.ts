@@ -2,7 +2,17 @@ import { ServiceRegistration } from './types/service-registration';
 import { FunctionRegistration } from './types/function-registration';
 var _registeredDependencies = {} as any;
 
-export function registerService(serviceRegistration: ServiceRegistration): void {
+export function registerDependencyProviders (dependencyProviders: (ServiceRegistration | FunctionRegistration)[]) {
+  dependencyProviders.forEach((provider: ServiceRegistration | FunctionRegistration) => {
+    if (provider.hasOwnProperty('function')) {
+      registerFunction(provider as FunctionRegistration);
+    } else {
+      registerService(provider as ServiceRegistration);
+    }
+  });
+}
+
+function registerService(serviceRegistration: ServiceRegistration): void {
   if (!isDependencyRegistered(serviceRegistration.service)) {
     if (serviceRegistration.overrideService !== undefined && serviceRegistration.overrideService !== null) {      
       _registeredDependencies[(serviceRegistration.service as any).name] = new serviceRegistration.overrideService();
@@ -12,7 +22,10 @@ export function registerService(serviceRegistration: ServiceRegistration): void 
   }
 }
 
-export function registerFunction(functionRegistration: FunctionRegistration): void {
+function registerFunction(functionRegistration: FunctionRegistration): void {
+  if (functionRegistration.function.name === 'function') {
+    throw Error('Registering anonymous functions is not permitted.');
+  }
   if (!isDependencyRegistered(functionRegistration.function)) {
     if (functionRegistration.overrideFunction !== undefined && functionRegistration.overrideFunction !== null) {
       _registeredDependencies[functionRegistration.function.name] = functionRegistration.overrideFunction;

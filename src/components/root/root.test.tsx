@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as Sinon from 'sinon';
 import { mount, shallow, ShallowWrapper } from 'enzyme';
 import { Root } from './root';
-import { registerService, fetchDependency } from '../../di/container';
+import { fetchDependency, registerDependencyProviders } from '../../di/container';
 import { MockLoggerService } from '../../mocks/logger-service.mock';
 import { LoggerService } from '../../services/logger-service';
 import { TestingUtils } from '../../utils/testing-utils';
@@ -14,8 +14,10 @@ describe('Component: Root', () => {
   let wrapper: ShallowWrapper<any, any>;
 
   beforeEach(() => {
-    registerService({ service: LoggerService, overrideService: MockLoggerService });
-    registerService({ service: ApiClient, overrideService: MockApiClient });
+    registerDependencyProviders([
+      { service: LoggerService, overrideService: MockLoggerService },
+      { service: ApiClient, overrideService: MockApiClient }
+    ]);
     this.wrapper = TestingUtils.shallowRenderHoC(Root, []);
   });
   
