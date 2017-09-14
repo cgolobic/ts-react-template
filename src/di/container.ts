@@ -2,21 +2,30 @@ import { ServiceRegistration } from './types/service-registration';
 import { FunctionRegistration } from './types/function-registration';
 var _registeredDependencies = {} as any;
 var _providerInstantiationComplete = false;
-var _providerMap: Map<string, ServiceRegistration> = new Map();
+var _providerMap: Map<string, any> = new Map();
+var _registrationMap: Map<string, {registration: ServiceRegistration, instantiating: boolean}> = new Map();
 
 export function registerDependencyProviders (dependencyProviders: (ServiceRegistration | FunctionRegistration)[]) {
   _registeredDependencies = new Map();
   _providerInstantiationComplete = false;
   dependencyProviders
     .filter((provider: ServiceRegistration | FunctionRegistration) => provider.hasOwnProperty('service'))
-    .forEach((provider: ServiceRegistration) => _providerMap.set(provider.service.name, provider));
-  _providerMap.forEach((val: any) => {
-    registerService(val);
+    .forEach((provider: ServiceRegistration) => _registrationMap.set(
+      provider.service.name,
+      {
+        registration: provider,
+        instantiating: false
+      }
+    ));
+  _registrationMap.forEach((val: any) => {
+    val.instantiating = true;
+    _registerService(val.registration);
+    val.instantiating = false;
   });
   _providerInstantiationComplete = true;
 }
 
-function registerService(serviceRegistration: ServiceRegistration): void {
+function _registerService(serviceRegistration: ServiceRegistration): void {
   if (!isDependencyRegistered(serviceRegistration.service)) {
     if (serviceRegistration.overrideService !== undefined && serviceRegistration.overrideService !== null) {      
       _registeredDependencies[(serviceRegistration.service as any).name] = new serviceRegistration.overrideService();
@@ -26,7 +35,7 @@ function registerService(serviceRegistration: ServiceRegistration): void {
   }
 }
 
-function registerFunction(functionRegistration: FunctionRegistration): void {
+function _registerFunction(functionRegistration: FunctionRegistration): void {
   if (functionRegistration.function.name === 'function') {
     throw Error('Registering anonymous functions is not permitted.');
   }
@@ -39,14 +48,20 @@ function registerFunction(functionRegistration: FunctionRegistration): void {
   }
 }
 
-export function fetchDependency(key: string) {
+ export function fetchDependency(key: string) {
   if (!_providerInstantiationComplete) {
-    if (_providerMap.get(key) === undefined) {
-      throw Error();
+    if (_registrationMap.get(key) === undefined) {
+      throw Error(`Dependency ${key} has not been registered with the dependency container.`);
     }
-    if (!isDependencyRegistered(key)) {
-      let registration = _providerMap.get(key);
-      registerService(registration);
+    let registeredDependency = _registeredDependencies[key];
+    if (registeredDependency === undefined || registeredDependency === null) {
+      let registration = _registrationMap.get(key);
+      if (registration.instantiating === true) {
+        throw Error('Circular dependency detected');
+      }
+      registration.instantiating = true;
+      _registerService(registration.registration);
+      registration.instantiating = false;
     }
     return _registeredDependencies[key];
   } else {
