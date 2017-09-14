@@ -7,8 +7,8 @@ import { LoggerService } from './services/logger-service';
 import { ApiClient } from './services/api-client-service';
 
 registerDependencyProviders([
+  { service: ApiClient },
   { service: LoggerService },
-  { service: ApiClient }
 ]);
 
 ReactDom.render(

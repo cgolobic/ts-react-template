@@ -1,15 +1,19 @@
 import { ServiceRegistration } from './types/service-registration';
 import { FunctionRegistration } from './types/function-registration';
 var _registeredDependencies = {} as any;
+var _providerInstantiationComplete = false;
+var _providerMap: Map<string, ServiceRegistration> = new Map();
 
 export function registerDependencyProviders (dependencyProviders: (ServiceRegistration | FunctionRegistration)[]) {
-  dependencyProviders.forEach((provider: ServiceRegistration | FunctionRegistration) => {
-    if (provider.hasOwnProperty('function')) {
-      registerFunction(provider as FunctionRegistration);
-    } else {
-      registerService(provider as ServiceRegistration);
-    }
+  _registeredDependencies = new Map();
+  _providerInstantiationComplete = false;
+  dependencyProviders
+    .filter((provider: ServiceRegistration | FunctionRegistration) => provider.hasOwnProperty('service'))
+    .forEach((provider: ServiceRegistration) => _providerMap.set(provider.service.name, provider));
+  _providerMap.forEach((val: any) => {
+    registerService(val);
   });
+  _providerInstantiationComplete = true;
 }
 
 function registerService(serviceRegistration: ServiceRegistration): void {
@@ -36,11 +40,22 @@ function registerFunction(functionRegistration: FunctionRegistration): void {
 }
 
 export function fetchDependency(key: string) {
-  let registeredDependency = _registeredDependencies[key];
-  if (registeredDependency === undefined || registeredDependency === null) {
-    throw new Error(`Dependency ${key} has not been registered with the dependency container.`);
+  if (!_providerInstantiationComplete) {
+    if (_providerMap.get(key) === undefined) {
+      throw Error();
+    }
+    if (!isDependencyRegistered(key)) {
+      let registration = _providerMap.get(key);
+      registerService(registration);
+    }
+    return _registeredDependencies[key];
+  } else {
+    let registeredDependency = _registeredDependencies[key];
+    if (registeredDependency === undefined || registeredDependency === null) {
+      throw new Error(`Dependency ${key} has not been registered with the dependency container.`);
+    }
+    return registeredDependency;
   }
-  return registeredDependency;
 }
 
 function isDependencyRegistered(dependency: any): boolean {
