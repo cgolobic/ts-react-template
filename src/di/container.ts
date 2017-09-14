@@ -3,24 +3,20 @@ import { FunctionRegistration } from './types/function-registration';
 var _registeredDependencies = {} as any;
 var _providerInstantiationComplete = false;
 var _providerMap: Map<string, any> = new Map();
-var _registrationMap: Map<string, {registration: ServiceRegistration, instantiating: boolean}> = new Map();
+var _registrationMap: Map<string, ServiceRegistration> = new Map();
+var _instantiationStack: string[] = [];
 
 export function registerDependencyProviders (dependencyProviders: (ServiceRegistration | FunctionRegistration)[]) {
   _registeredDependencies = new Map();
   _providerInstantiationComplete = false;
+  _instantiationStack = [];
   dependencyProviders
     .filter((provider: ServiceRegistration | FunctionRegistration) => provider.hasOwnProperty('service'))
-    .forEach((provider: ServiceRegistration) => _registrationMap.set(
-      provider.service.name,
-      {
-        registration: provider,
-        instantiating: false
-      }
-    ));
-  _registrationMap.forEach((val: any) => {
-    val.instantiating = true;
-    _registerService(val.registration);
-    val.instantiating = false;
+    .forEach((provider: ServiceRegistration) => _registrationMap.set(provider.service.name, provider));
+  _registrationMap.forEach((val: ServiceRegistration) => {
+    _instantiationStack.push(val.service.name)
+    _registerService(val);
+    _instantiationStack.pop();
   });
   _providerInstantiationComplete = true;
 }
@@ -56,12 +52,12 @@ function _registerFunction(functionRegistration: FunctionRegistration): void {
     let registeredDependency = _registeredDependencies[key];
     if (registeredDependency === undefined || registeredDependency === null) {
       let registration = _registrationMap.get(key);
-      if (registration.instantiating === true) {
+      if (_instantiationStack.find((providerKey: string) => providerKey === key)) {
         throw Error('Circular dependency detected');
       }
-      registration.instantiating = true;
-      _registerService(registration.registration);
-      registration.instantiating = false;
+      _instantiationStack.push(registration.service.name);
+      _registerService(registration);
+      _instantiationStack.pop();
     }
     return _registeredDependencies[key];
   } else {
