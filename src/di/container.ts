@@ -1,5 +1,6 @@
 import { ServiceRegistration } from './types/service-registration';
 import { FunctionRegistration } from './types/function-registration';
+import { NotRegisteredError, CircularDependencyError } from './types/errors';
 var _providerInstantiationComplete = false;
 var _providerMap: Map<string, any> = new Map();
 var _registrationMap: Map<string, ServiceRegistration> = new Map();
@@ -60,21 +61,21 @@ function registerDependencyProviders (dependencyProviders: (ServiceRegistration 
 function fetchDependency(key: string) {
   if (!_providerInstantiationComplete) {
     if (!_registrationMap.has(key)) {
-      throw Error(`Dependency ${key} has not been registered with the dependency container.`);
+      throw new NotRegisteredError(key);
     }
     if (!_isDependencyRegistered(key)) {
       let registration = _registrationMap.get(key);
       let params: any[] = Reflect.getMetadata('design:paramtypes', registration.service);
       if (params !== undefined && params.length > 0) {
-        if (_instantiationStack.find((providerKey: string) => providerKey === key) || params.findIndex((param: any) => param === undefined) === -1) {
-          throw new Error('Circular dependency detected');
+        if (_instantiationStack.find((providerKey: string) => providerKey === key) || params.findIndex((param: any) => param === undefined) !== -1) {
+          throw new CircularDependencyError();
         }
       }
       _registerService(registration);
     }
   } else {
     if (!_isDependencyRegistered(key)) {
-      throw new Error(`Dependency ${key} has not been registered with the dependency container.`);
+      throw new NotRegisteredError(key);
     }
   }
   return _providerMap.get(key);
