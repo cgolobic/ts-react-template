@@ -5,8 +5,6 @@ var _providerMap: Map<string, any> = new Map();
 var _registrationMap: Map<string, ServiceRegistration> = new Map();
 var _instantiationStack: string[] = [];
 
-// Internal functions
-
 function _isDependencyRegistered(key: string): boolean {
   return _providerMap.has(key);
 }
@@ -36,11 +34,9 @@ function _registerFunction(functionRegistration: FunctionRegistration): void {
   }
 }
 
-
-// Exports
-
-export function registerDependencyProviders (dependencyProviders: (ServiceRegistration | FunctionRegistration)[]) {
+function registerDependencyProviders (dependencyProviders: (ServiceRegistration | FunctionRegistration)[]) {
   _providerMap = new Map();
+  _registrationMap = new Map();
   _providerInstantiationComplete = false;
   _instantiationStack = [];
 
@@ -61,15 +57,18 @@ export function registerDependencyProviders (dependencyProviders: (ServiceRegist
   _providerInstantiationComplete = true;
 }
 
- export function fetchDependency(key: string) {
+function fetchDependency(key: string) {
   if (!_providerInstantiationComplete) {
     if (!_registrationMap.has(key)) {
       throw Error(`Dependency ${key} has not been registered with the dependency container.`);
     }
     if (!_isDependencyRegistered(key)) {
       let registration = _registrationMap.get(key);
-      if (_instantiationStack.find((providerKey: string) => providerKey === key)) {
-        throw Error('Circular dependency detected');
+      let params: any[] = Reflect.getMetadata('design:paramtypes', registration.service);
+      if (params !== undefined && params.length > 0) {
+        if (_instantiationStack.find((providerKey: string) => providerKey === key) || params.findIndex((param: any) => param === undefined) === -1) {
+          throw new Error('Circular dependency detected');
+        }
       }
       _registerService(registration);
     }
@@ -80,4 +79,8 @@ export function registerDependencyProviders (dependencyProviders: (ServiceRegist
   }
   return _providerMap.get(key);
 }
-  
+
+export {
+  registerDependencyProviders,
+  fetchDependency
+}
