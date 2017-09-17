@@ -7,7 +7,12 @@ module.exports = function(config) {
     browsers: ['Chrome'],
     colors: true,
     exclude: [],
-    files: ['src/**/*.test.tsx'],
+    mime: {
+      'text/x-typescript': ['ts', 'tsx']
+    },
+    files: [
+      { pattern: 'src/**/*.test.ts?(x)', included: true }
+    ],
     frameworks: [
       'mocha',
       'chai',
@@ -19,7 +24,7 @@ module.exports = function(config) {
     ],
     port: 4321,
     preprocessors: {
-      'src/**/*.test.tsx': ['webpack']
+      'src/**/*.test.ts?(x)': ['webpack']
     },
     reporters: ['mocha'],
     singleRun: false,
